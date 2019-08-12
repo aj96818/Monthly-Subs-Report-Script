@@ -12,8 +12,6 @@ act_date<-'2019-07-31'
 exp_date<-'2019-08-01'
    
 
-
-
 #####   1) Bluehost  ####
 
 bh_path <- raw_msr_subs_directory
@@ -454,7 +452,7 @@ ctct_raw <- read_csv(paste0(raw_msr_subs_directory, 'ConstantContact_Monthly-Sub
 
 ctct_raw$Exp<-ctct_raw$`Term Expiration Date` + 75
 
-ctct_active<-ctct_raw[(ctct_raw$`Subscription Status` == 'Active') & (ctct_raw$Exp >= as.Date('2019-08-01')),]
+ctct_active<-ctct_raw[(ctct_raw$`Subscription Status` == 'Active') & (ctct_raw$Exp >= as.Date(exp_date)),]
 
 # Removing the above 16 SOIDs manually as of Q2'19 close. 
 
