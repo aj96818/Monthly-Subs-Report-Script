@@ -5,8 +5,13 @@ library(lubridate)
 library(plyr)
 library(readr)
 
-raw_msr_subs_directory<-'D:/Subs files/2019Q3 - Subs Data - Jul/data/'
-setwd('D:/Subs files/2019Q3 - Subs Data - Jul/filtered/')
+
+filename_date<-'2019-07-31'
+raw_msr_subs_directory<-'//corp.endurance.com/acl/data/SubscriberReports/'
+act_date<-'2019-07-31'
+exp_date<-'2019-08-01'
+   
+
 
 
 #####   1) Bluehost  ####
@@ -436,14 +441,15 @@ write_csv(final_lwp, paste0('hg_lwp_msr_', report_date, '_filtered.csv'))
 # Remember to include in import syntax double quote text qualifiers because CTCT MSR has double quotes around almost every value even empty ones.
 
 library(readr)
-ctct_raw <- read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/ConstantContact_Monthly-Subs-Report_2019-07-31.csv", quote = "\"", col_types = cols(`Account ID` = col_character(),                                                                            `Activation Date` = col_date(format = "%Y-%m-%d"), 
-                                                                                                                                                      `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
-                                                                                                                                                      `Current Subscription ID` = col_character(), 
-                                                                                                                                                      `Initial Subscription ID` = col_character(), 
-                                                                                                                                                      `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
-                                                                                                                                                      `Offer ID` = col_character(), `Subscription ID` = col_character(), 
-                                                                                                                                                      `Term Expiration Date` = col_date(format = "%Y-%m-%d"), 
-                                                                                                                                                      `User Name` = col_character()))
+ctct_raw <- read_csv(paste0(raw_msr_subs_directory, 'ConstantContact_Monthly-Subs-Report_', filename_date, '.csv'),
+                     quote = "\"", col_types = cols(`Account ID` = col_character(),                                                                            `Activation Date` = col_date(format = "%Y-%m-%d"), 
+                                                    `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
+                                                    `Current Subscription ID` = col_character(), 
+                                                    `Initial Subscription ID` = col_character(), 
+                                                    `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
+                                                    `Offer ID` = col_character(), `Subscription ID` = col_character(), 
+                                                    `Term Expiration Date` = col_date(format = "%Y-%m-%d"), 
+                                                    `User Name` = col_character()))
 
 
 ctct_raw$Exp<-ctct_raw$`Term Expiration Date` + 75
