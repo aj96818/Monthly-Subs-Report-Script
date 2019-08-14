@@ -10,6 +10,7 @@ filename_date<-'2019-07-31'
 raw_msr_subs_directory<-'//corp.endurance.com/acl/data/SubscriberReports/'
 act_date<-'2019-07-31'
 exp_date<-'2019-08-01'
+report_date<-'2019-07-31'
    
 
 #####   1) Bluehost  ####
@@ -343,14 +344,12 @@ write_csv(v_all, paste0('vdeck_subs-summary_', report_date, '_filtered.csv'))
 
 #hg<-read_csv('//corp.endurance.com/acl/data/SubscriberReports/HostGator-Monthly-Subs-Report_2018-09-30_2018- 10-01_14-22- 10.csv', col_names = T)
 library(readr)
+hg_raw <- read_csv(paste0(raw_msr_subs_directory, 'HostGator_Monthly-Subs-Report_', filename_date, '.csv'), 
+                   col_names = T,
+                   cols(`Term Expiration Date` = col_character()))
 
-report_date<-'2019-07-31'
-hg<-read_csv('D:/Subs files/2019Q3 - Subs Data - Jul/data/HostGator_Monthly-Subs-Report_2019-07-31.csv', col_names = T,
-             cols(`Term Expiration Date` = col_character()))
-
-
-hg$`Term Expiration Date`<-as.Date(hg$`Term Expiration Date`, format = '%Y-%m-%d')
-h<-hg
+hg_raw$`Term Expiration Date`<-as.Date(hg_raw$`Term Expiration Date`, format = '%Y-%m-%d')
+h<-hg_raw
 h$exp<-h$`Term Expiration Date` + 45
 
 range(h$`Activation Date`, na.rm=T)
@@ -358,8 +357,8 @@ range(h$`Term Expiration Date`, na.rm=T)
 range(h$`Last Payment Amount`, na.rm=T)
 
 # Check dates and 'NA' values for 'Term Expiration Date' !!!
-h<-h[(h$`Activation Date` <= as.Date('2019-07-31'))
-     & (h$exp >= as.Date('2019-08-01'))
+h<-h[(h$`Activation Date` <= as.Date(act_date))
+     & (h$exp >= as.Date(exp_date))
      & ((h$`Cancellation Date` >= as.Date('2019-08-01')) | is.na(h$`Cancellation Date`)) 
      & (h$`Activation Date` >= as.Date('1975-01-01'))
      & (h$`Subscription Status` %in% c('Active')),]
@@ -994,18 +993,18 @@ not_in_msr<-final[!final$`Subscription ID` %in% site5_msr_2019_04_30_filtered$`S
 # Activation Date before 7/1/2019
 # Distinct Count of 'Username' 
 
-nf <- read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/Netfirms-Monthly-Subs-Report_2019-07-31.csv", 
-               col_types = cols(`ExpireDate(NextBill Date)` = col_date(format = "%Y-%m-%d"),
-                                `Last Transaction Date` = col_date(format = "%Y-%m-%d"), 
-                                SignupDate = col_date(format = "%Y-%m-%d")))
+nf_raw <- read_csv(paste0(raw_msr_subs_directory, 'Netfirms-Monthly-Subs-Report_', filename_date, '.csv'),
+                   col_types = cols(`ExpireDate(NextBill Date)` = col_date(format = "%Y-%m-%d"),
+                                    `Last Transaction Date` = col_date(format = "%Y-%m-%d"), 
+                                    SignupDate = col_date(format = "%Y-%m-%d")))
 
 #nf$SignupDate<-as.Date(nf$SignupDate, format = '%m/%d/%Y')
 #nf$`ExpireDate(NextBill Date)`<-as.Date(nf$`ExpireDate(NextBill Date)`, format = '%m/%d/%Y')
 
-nf_filtered<-nf[(nf$`SignupDate` <= as.Date('2019-07-31'))
-                & (nf$`ExpireDate(NextBill Date)` >= as.Date('2019-08-01'))
-                & (!is.na(nf$`Last Transaction Date`))
-                & (nf$`Last Transaction Date` <= as.Date('2019-07-31')),]
+nf_filtered<-nf_raw[(nf_raw$`SignupDate` <= as.Date('2019-07-31'))
+                & (nf_raw$`ExpireDate(NextBill Date)` >= as.Date(exp_date))
+                & (!is.na(nf_raw$`Last Transaction Date`))
+                & (nf_raw$`Last Transaction Date` <= as.Date('2019-07-31')),]
 
 nf_distinct<-subset(nf_filtered, !duplicated(`UserName`))
 
@@ -1151,10 +1150,9 @@ directi_msr_filtered(rh = rh, rl = rl, wh = wh, wl = wl,
 
 #####   9) Brazil & LATAM    ####
 
-h<-read_csv('D:/Subs files/2019Q3 - Subs Data - Jul/data/HGBrazil_Monthly-Subs-Report_2019-07-31.csv')
-h$exp<-h$`Term Expiration Date` + 30
-h<-h[(h$`Activation Date` <= as.Date("2019-07-31")) & (h$exp >= as.Date("2019-08-01")) & (h$`Subscription Status` %in% c("Active", "Suspended")),]
-
+hbrazil_raw <- read_csv(paste0(raw_msr_subs_directory, 'HGBrazil_Monthly-Subs-Report_', filename_date, '.csv'))
+hbrazil_raw$exp<-hbrazil_raw$`Term Expiration Date` + 30
+h<-hbrazil_raw[(hbrazil_raw$`Activation Date` <= as.Date(act_date)) & (hbrazil_raw$exp >= as.Date(exp_date)) & (hbrazil_raw$`Subscription Status` %in% c("Active", "Suspended")),]
 range(h$`Last Payment Amount`, na.rm=T)
 zero<-h[which(is.na(h$`Last Payment Amount`)),]
 
@@ -1192,14 +1190,14 @@ write_csv(h_final, 'hg_brazil_msr_2019-07-31_filtered.csv')
 library(plyr)
 library(readr)
 
-h<-read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/Gator_Monthly-Subs-Report_2019-07-31_v2.csv", 
-            col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"), 
-                             `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
-                             `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
-                             `Term Expiration Date` = col_date(format = "%Y-%m-%d")))
+gator_raw <- read_csv(paste0(raw_msr_subs_directory, 'Gator_Monthly-Subs-Report_', filename_date, '.csv'),
+                      col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"), 
+                      `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
+                      `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
+                      `Term Expiration Date` = col_date(format = "%Y-%m-%d")))
 
 
-h<-h[h$`Subscription Status` %in% c('active', 'suspended'),]
+h<-gator_raw[gator_raw$`Subscription Status` %in% c('active', 'suspended'),]
 
 length(which(is.na(h$`Cancellation Date`)))
 
@@ -1219,7 +1217,7 @@ h<-subset(h, !(`Product Term Duration` %in% c(0)))
 h<-subset(h, (`Subscription Status` %in% c('active', 'suspended')))
 
 # CHECK DATE RANGES !!!
-h<-h[(h$`Activation Date` <= as.Date('2019-07-31')) & (h$`Activation Date` > as.Date('1999-01-01')) & (h$`Exp` >= ('2019-08-01')),]
+h<-h[(h$`Activation Date` <= as.Date(act_date)) & (h$`Activation Date` > as.Date('1999-01-01')) & (h$`Exp` >= (exp_date)),]
 # CHECK DATE RANGES !!!
 
 range(h$`Activation Date`, na.rm=T)
@@ -1247,22 +1245,23 @@ write_csv(final, 'gator_msr_2019-07-31_filtered.csv')
 #####   11) JDI Backup  ####
 
 library(readr)
-b<-read_csv('D:/Subs files/2019Q3 - Subs Data - Jul/data/Backup_Monthly-Subs-Report_2019-07-31.csv', col_names = T)
+backup_raw <- read_csv(paste0(raw_msr_subs_directory, 'Backup_Monthly-Subs-Report_', filename_date, '.csv'))
 
 #b$ngs<-ifelse(b$`Property` == 'MyPC Backup', 49, 30)
 #b$exp<-b$`Term Expiration Date` + b$ngs
-b$exp<-b$`Term Expiration Date` + b$NGS
+backup_raw$exp<-backup_raw$`Term Expiration Date` + backup_raw$NGS
+
 # CHECK DATES !!
-b<-b[(b$`Activation Date` <= as.Date('2019-07-31')) 
-     & (b$`Activation Date` >= as.Date('1990-01-01')) 
-     & (b$`Subscription Status` %in% c('ACTIVE', 'SUSPENDED')) 
-     & (b$`Last Payment Amount` > 0) 
-     & (b$exp >= as.Date('2019-08-01')),]
+b<-backup_raw[(backup_raw$`Activation Date` <= as.Date(act_date)) 
+     & (backup_raw$`Activation Date` >= as.Date('1990-01-01')) 
+     & (backup_raw$`Subscription Status` %in% c('ACTIVE', 'SUSPENDED')) 
+     & (backup_raw$`Last Payment Amount` > 0) 
+     & (backup_raw$exp >= as.Date(exp_date)),]
 
 #Need to manually review Cancellation Dates that have an 'Active' status but are in the reporting month.
 # & ((b$`Cancellation Date` >= as.Date('2019-04-01')) | is.na(b$`Cancellation Date`)),]
 
-b<-b[which(!is.na(b[,2])),]
+b<-backup_raw[which(!is.na(b[,2])),]
 b.filtered<-subset(b, !duplicated(`Account ID`))
 b.filtered<-b.filtered[!b.filtered$`Account ID` %in% c(1),]
 
@@ -1274,14 +1273,14 @@ write_csv(b.final, 'backup_msr_2019-07-31_filtered.csv')
 
 # Exclude Cancelled Statuses; check that Activation Date & Term Expiration Date are within range.  
 
-hs<-read_csv('D:/Subs files/2019Q3 - Subs Data - Jul/data/Homestead_Monthly-Subs-Report_2019-07-31.csv',
-             col_types = cols(`Activation Date` = col_date(format = "%m/%d/%Y"),
-                              `Cancellation Date` = col_date(format = "%m/%d/%Y"), 
-                              `Last Authorization Date` = col_date(format = "%m/%d/%Y"), 
-                              `Term Expiration Date` = col_date(format = "%m/%d/%Y"),
-                              `Cancellation Date` = col_date(format = "%m/%d/%Y")))
+hs_raw <- read_csv(paste0(raw_msr_subs_directory, 'Homestead_Monthly-Subs-Report_', filename_date, '.csv'),
+                   col_types = cols(`Activation Date` = col_date(format = "%m/%d/%Y"),
+                  `Cancellation Date` = col_date(format = "%m/%d/%Y"),
+                  `Last Authorization Date` = col_date(format = "%m/%d/%Y"),
+                  `Term Expiration Date` = col_date(format = "%m/%d/%Y"),
+                  `Cancellation Date` = col_date(format = "%m/%d/%Y")))
 
-hs_filtered<-hs[hs$`Subscription Status` %in% c('Active', 'Suspended'),]
+hs_filtered<-hs_raw[hs_raw$`Subscription Status` %in% c('Active', 'Suspended'),]
 
 range(hs_filtered$`Activation Date`)
 range(hs_filtered$`Term Expiration Date`)
@@ -1297,14 +1296,14 @@ write_csv(hs_final, 'homestead_msr_2019-07-31_filtered.csv')
 # 105 days = 30-day use of service + 75-day NGS period.
 # Will need to confirm with Sarah about this on a quarterly basis how many that violate the filter above need to come out of the active subscriber population.
 
-sp<-read_csv('D:/Subs files/2019Q3 - Subs Data - Jul/data/SinglePlatform_Monthly-Subs-Report_2019-07-31.csv',
-             col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"),
-                              `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
-                              `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
-                              `Term Expiration Date` = col_date(format = "%Y-%m-%d"),
-                              `Cancellation Date` = col_date(format = "%Y-%m-%d")))
+sp_raw <-read_csv(paste0(raw_msr_subs_directory, 'SinglePlatform_Monthly-Subs-Report_', filename_date, '.csv'),
+                  col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"),
+                                   `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
+                                   `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
+                                   `Term Expiration Date` = col_date(format = "%Y-%m-%d"),
+                                   `Cancellation Date` = col_date(format = "%Y-%m-%d")))
 
-sp_filtered<-sp[sp$`Subscription Status` %in% c('Active', 'Suspended'),]
+sp_filtered<-sp_raw[sp_raw$`Subscription Status` %in% c('Active', 'Suspended'),]
 
 range(sp_filtered$`Activation Date`)
 range(sp_filtered$`Term Expiration Date`)
@@ -1318,7 +1317,7 @@ write_csv(sp_final, 'sp_msr_2019-07-31_filtered.csv')
 library(readr)
 library(plyr)
 
-h<-read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/CTCTSites_Monthly-Subs-Report_2019-07-31_v2.csv", 
+ctctsites_raw<-read_csv(paste0(raw_msr_subs_directory, 'CTCTSites_Monthly-Subs-Report_', filename_date, '.csv'),
             col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"),
                              `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
                              `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
@@ -1336,10 +1335,10 @@ h<-subset(h, (`Subscription Status` %in% c('active', 'suspended')))
 range(h$`Activation Date`)
 
 # CHANGE DATES !!!
-h<-h[(h$`Activation Date` <= as.Date('2019-07-31'))
+h<-h[(h$`Activation Date` <= as.Date(act_date))
      & (h$`Activation Date` > as.Date('1990-01-01')) 
      & (h$`Last Authorization Date` <= as.Date('2019-07-31'))
-     & (h$`Exp` >= ('2019-08-01')),]
+     & (h$`Exp` >= (exp_date)),]
 # CHECK DATE RANGES !!!
 
 range(h$`Activation Date`, na.rm=T)
@@ -1393,18 +1392,18 @@ write_csv(ctct_sites_final, 'ctct-sites_msr_2019-07-31_filtered.csv')
 
 #####   15) MOJO    ####
 
-m <- read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/Mojo_Monthly-Subs-Report_2019-07-31.csv", 
-              col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"), 
-                               `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
-                               `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
-                               `Term Expiration Date` = col_date(format = "%Y-%m-%d")))
+mojo_raw<-read_csv(paste0(raw_msr_subs_directory, 'Mojo_Monthly-Subs-Report_', filename_date, '.csv'),
+                   col_types = cols(`Activation Date` = col_date(format = "%Y-%m-%d"), 
+                                    `Cancellation Date` = col_date(format = "%Y-%m-%d"), 
+                                    `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
+                                    `Term Expiration Date` = col_date(format = "%Y-%m-%d")))
 
-m<-m[(m$`Activation Date` <= as.Date('2019-07-31'))
-     & (m$`Term Expiration Date` >= as.Date('2019-08-01'))
-     & (m$`Subscription Status` %in% c('active', 'suspended'))
-     & (m$Property == 'Mojo')
-     & (m$`Last Authorization Date` <= as.Date('2019-07-31'))
-     & (m$`Last Payment Amount` > 0),]
+m<-mojo_raw[(mojo_raw$`Activation Date` <= as.Date(act_date))
+     & (mojo_raw$`Term Expiration Date` >= as.Date(exp_date))
+     & (mojo_raw$`Subscription Status` %in% c('active', 'suspended'))
+     & (mojo_raw$Property == 'Mojo')
+     & (mojo_raw$`Last Authorization Date` <= as.Date(act_date))
+     & (mojo_raw$`Last Payment Amount` > 0),]
 
 m_distinct<-subset(m, !duplicated(`Account ID`))
 
@@ -1420,10 +1419,10 @@ am <- read_csv("D:/Subs files/2019Q3 - Subs Data - Jul/data/AppMachine_Monthly-S
                                 `Last Authorization Date` = col_date(format = "%Y-%m-%d"), 
                                 `Term Expiration Date` = col_date(format = "%Y-%m-%d")))
 
-am<-am[(am$`Activation Date` <= as.Date('2019-07-31'))
-       & (am$`Term Expiration Date` >= as.Date('2019-08-01'))
+am<-am[(am$`Activation Date` <= as.Date(act_date))
+       & (am$`Term Expiration Date` >= as.Date(exp_date))
        & (am$`Subscription Status` %in% c('active', 'suspended'))
-       & (am$`Last Authorization Date` <= as.Date('2019-07-31'))
+       & (am$`Last Authorization Date` <= as.Date(act_date))
        & (am$`Last Payment Amount` > 0),]
 
 am_distinct<-subset(am, !duplicated(`Account ID`))
